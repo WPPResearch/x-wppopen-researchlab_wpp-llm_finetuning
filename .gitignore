@@ -66,3 +66,6 @@ unsloth_compiled_cache/
 
 # Finetuned weights output
 qwen_finetuned/
+
+__pycache__/
+*.pyc
