@@ -1,0 +1,4 @@
+data/raw_data/**/*.jsonl filter=lfs diff=lfs merge=lfs -text
+data/raw_data/V15/V15_train.jsonl filter=lfs diff=lfs merge=lfs -text
+data/raw_data/V15/V15_test.jsonl filter=lfs diff=lfs merge=lfs -text
+data/raw_data/V15/V15_ground_truth.txt filter=lfs diff=lfs merge=lfs -text

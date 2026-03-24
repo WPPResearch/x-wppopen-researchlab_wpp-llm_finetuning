@@ -1,0 +1,20 @@
+src/gemini_classification
+results
+src/qwen_local_classification
+data
+.vscode
+.venv
+.ruff_cache
+__pycache__
+*.pyc
+.env
+
+# Virtual Environment
+.venv/
+
+# Unsloth temporarily saved buffers and compiled cache
+_unsloth_temporary_saved_buffers/
+unsloth_compiled_cache/
+
+# Finetuned weights output
+qwen_finetuned/
