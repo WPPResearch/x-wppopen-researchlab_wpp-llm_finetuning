@@ -40,9 +40,10 @@ This should download all the raw data files to your local machine in `data/raw_d
 4. **Environment Variables:**
    This project loads configuration keys via `python-dotenv`. You must manually create a file named `.env` in the root of the project directory.
 
-   - **For GCP services (Vertex AI, GCS):** Authenticate directly via the terminal (see instructions below). Do not store GCP Service Account JSONs here. Instead, define your working project ID:
+   - **For GCP services (Vertex AI, GCS):** Authenticate directly via the terminal (see instructions below). Do not store GCP Service Account JSONs here. Instead, define your working project ID and bucket name:
      ```env
      PROJECT_ID="your_google_cloud_project_id"
+     BUCKET_NAME="your_gcs_bucket_name"
      ```
    - **For accessing gating Hugging Face Models (Gemma/Qwen):**
      ```env
