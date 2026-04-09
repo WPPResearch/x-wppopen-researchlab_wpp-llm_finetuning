@@ -9,7 +9,7 @@ if not PROJECT_ID:
 
 LOCATION = os.environ.get("GOOGLE_CLOUD_REGION", "us-central1")
 
-BUCKET_NAME = "ds_finetuning_for_campaign_outcomes"
+BUCKET_NAME = os.environ.get("BUCKET_NAME", "your_bucket_name")
 BUCKET_URI = f"gs://{BUCKET_NAME}"
 
 
