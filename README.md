@@ -1,4 +1,4 @@
-# AI Lab LLM Campaign Finetuning
+# WPP Research LLM Campaign Finetuning
 
 *Requires Python: >= 3.10*
 
@@ -36,7 +36,6 @@ This should download all the raw data files to your local machine in `data/raw_d
    uv sync
    ```
    *This commands automatically discovers the `pyproject.toml` and creates a `.venv` directory for you locally.*
-
 4. **Environment Variables:**
    This project loads configuration keys via `python-dotenv`. You must manually create a file named `.env` in the root of the project directory.
 
@@ -124,9 +123,9 @@ The entry point for this workflow is `gemma_classification_main.py`. It submits 
 3. Ensure Docker is installed and running on your machine. Build and push the custom Docker container that the Vertex AI worker will use. Remember to replace `<PROJECT_ID>` with your actual Google Cloud Project ID:
    ```bash
    # From the root of the repository
-   docker build -t gemma-classifier-test:latest -f src/gemma_classification/Dockerfile .
-   docker tag gemma-classifier-test:latest gcr.io/<PROJECT_ID>/gemma-classifier-test:latest
-   docker push gcr.io/<PROJECT_ID>/gemma-classifier-test:latest
+   docker build -t gemma-classifier:latest -f src/gemma_classification/Dockerfile .
+   docker tag gemma-classifier:latest gcr.io/<PROJECT_ID>/gemma-classifier:latest
+   docker push gcr.io/<PROJECT_ID>/gemma-classifier:latest
    ```
 4. Execute the pipeline:
    ```bash
