@@ -1,7 +1,10 @@
 [project]
-name = "ai-lab-llm-campaign-finetuning"
-version = "0.1.0"
-description = "Add your description here"
+name = "wpp-research-llm-campaign-finetuning"
+version = "1.0.0"
+description = "Large Language Model fine-tuning pipeline for classification campaigns on Google Cloud Vertex AI."
+authors = [
+    { name = "Elektra Papazoglou" }
+]
 readme = "README.md"
 requires-python = "==3.10.*"
 dependencies = [
