@@ -2,9 +2,9 @@ import pandas as pd
 from pathlib import Path
 from typing import Dict, Any
 
-from src.gemini_classification.config import DATASET_VERSION, SYSTEM_PROMPT_VERSION
+from src.gemini_classification.config import DATASET_VERSION
 from src.gemini_classification.prompts import USER_PROMPT_TEMPLATE, SYSTEM_PROMPT
-from src.gemini_classification.helpers import save_jsonlines, verify_local_datasets 
+from src.gemini_classification.helpers import save_jsonlines, verify_local_datasets
 
 
 class VertexDatasetProcessor:
@@ -162,5 +162,3 @@ class VertexDatasetProcessor:
             / f"test_sys_prompt_{self.sys_v}_{DATASET_VERSION}.jsonl",
             test_data,
         )
-
-

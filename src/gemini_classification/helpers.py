@@ -1,19 +1,21 @@
 import json
-import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Any, Union
 from google.cloud import storage
 from src.gemini_classification.config import BASE_MODEL
 
 
 # --- FILE & GCS HELPERS ---
 
+
 def verify_local_datasets(dataset_version: str) -> None:
     """Checks if Git LFS files exist in the expected directory."""
     target_dir = Path(f"data/raw_data/{dataset_version}")
-    
+
     if not target_dir.exists():
-        print(f"Error: Directory {target_dir} not found. Ensure Git LFS is initialized.")
+        print(
+            f"Error: Directory {target_dir} not found. Ensure Git LFS is initialized."
+        )
         return
 
     files = list(target_dir.glob("*.jsonl"))
