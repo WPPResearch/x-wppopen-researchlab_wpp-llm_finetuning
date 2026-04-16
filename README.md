@@ -48,6 +48,8 @@ This should download all the raw data files to your local machine in `data/raw_d
      ```env
      HF_TOKEN="your_hugging_face_token_here"
      ```
+5. **Create GCP Bucket:**
+   Create a gcp bucket with the name defined in the `.env` file. It is important that the bucket is created in the same, specific region that is defined in the config files to be compatible with VertexAI.
 
 ## Data Processing Pipeline
 
