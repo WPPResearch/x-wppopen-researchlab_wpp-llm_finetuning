@@ -6,47 +6,61 @@ from src.qwen_local_classification.model import LLMClassifier
 from src.qwen_local_classification.trainer import ModelTrainer
 from src.qwen_local_classification.evaluator import ModelEvaluator
 
+
 def preprocess(config: Config):
     processor = DataProcessor(config)
     processor.prepare_and_save_data()
 
+
 def train(config: Config):
     llm = LLMClassifier(config)
     trainer = ModelTrainer(config, llm)
-    
+
     # Load dataset
     print("Loading prepared training data...")
-    train_df = pd.read_csv(f"data/preprocessed_data/for_training_qwen/{config.dataset_version}/preprocessed_oversampled_train.csv")
-    
-    # Format prompts 
+    train_df = pd.read_csv(
+        f"data/preprocessed_data/for_training_qwen/{config.dataset_version}/preprocessed_oversampled_train.csv"
+    )
+
+    # Format prompts
     processor = DataProcessor(config)
     train_df = processor.apply_prompt_template(train_df)
-    
+
     trainer.train(train_df, is_oversampled=True)
+
 
 def evaluate(config: Config):
     llm = LLMClassifier(config)
     evaluator = ModelEvaluator(config, llm)
-    
+
     print("Loading validation data...")
-    val_df = pd.read_csv(f"data/preprocessed_data/for_evaluation_qwen/{config.dataset_version}/preprocessed_val.csv")
-    
+    val_df = pd.read_csv(
+        f"data/preprocessed_data/for_evaluation_qwen/{config.dataset_version}/preprocessed_val.csv"
+    )
+
     processor = DataProcessor(config)
     # The evaluation loop only evaluates logits so we format without labels essentially
-    val_df = processor.apply_prompt_template(val_df.drop(columns=['label']) if 'label' in val_df else val_df)
+    val_df = processor.apply_prompt_template(
+        val_df.drop(columns=["label"]) if "label" in val_df else val_df
+    )
     # Put labels back for passing to eval loop
-    val_df_labels = pd.read_csv(f"data/preprocessed_data/for_evaluation_qwen/{config.dataset_version}/preprocessed_val.csv")['label']
-    val_df['label'] = val_df_labels
+    val_df_labels = pd.read_csv(
+        f"data/preprocessed_data/for_evaluation_qwen/{config.dataset_version}/preprocessed_val.csv"
+    )["label"]
+    val_df["label"] = val_df_labels
 
     evaluator.evaluate(val_df, batch_size=16)
+
 
 def predict(config: Config, boost: bool = False):
     llm = LLMClassifier(config)
     evaluator = ModelEvaluator(config, llm)
-    
+
     print("Loading testing data...")
-    test_df = pd.read_csv(f"data/preprocessed_data/for_testing_qwen/{config.dataset_version}/preprocessed_test.csv")
-    
+    test_df = pd.read_csv(
+        f"data/preprocessed_data/for_testing_qwen/{config.dataset_version}/preprocessed_test.csv"
+    )
+
     processor = DataProcessor(config)
     test_df = processor.apply_prompt_template(test_df)
 
@@ -57,18 +71,25 @@ def predict(config: Config, boost: bool = False):
     factors = [1.0, 1.0, 1.0]
     if boost:
         factors = [2.5, 1.0, 2.5]
-    
+
     import os
+
     out_dir = "results/classification/submissions"
     os.makedirs(out_dir, exist_ok=True)
-    
+
     base_name = f"QWEN_{config.dataset_version}_lr{config.learning_rate}_bs{config.per_device_train_batch_size}_ep{config.num_train_epochs}_r{config.r}_{config.seed}"
     if boost:
         base_name += "_boosted"
-    
+
     out_file = os.path.join(out_dir, f"{base_name}.txt")
-    
-    evaluator.predict(test_df, batch_size=16, boost_factors=factors if boost else None, output_file=out_file)
+
+    evaluator.predict(
+        test_df,
+        batch_size=16,
+        boost_factors=factors if boost else None,
+        output_file=out_file,
+    )
+
 
 def main():
     parser = argparse.ArgumentParser(description="Local LLM Classifier Pipeline")
@@ -81,11 +102,19 @@ def main():
     subparsers.add_parser("train", help="Finetune the model on the training data")
 
     # Command: Evaluate
-    subparsers.add_parser("evaluate", help="Evaluate the model on the validation dataset")
+    subparsers.add_parser(
+        "evaluate", help="Evaluate the model on the validation dataset"
+    )
 
     # Command: Predict
-    predict_parser = subparsers.add_parser("predict", help="Generate predictions on the test dataset")
-    predict_parser.add_argument("--boost", action="store_true", help="Apply confidence boosting adjustments to logits")
+    predict_parser = subparsers.add_parser(
+        "predict", help="Generate predictions on the test dataset"
+    )
+    predict_parser.add_argument(
+        "--boost",
+        action="store_true",
+        help="Apply confidence boosting adjustments to logits",
+    )
 
     args = parser.parse_args()
     config = Config()
@@ -100,6 +129,7 @@ def main():
         predict(config, boost=args.boost)
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()

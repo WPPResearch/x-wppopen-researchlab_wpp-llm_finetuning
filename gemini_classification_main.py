@@ -7,7 +7,9 @@ from src.gemini_classification.config import (
     N_EPOCHS,
     SYSTEM_PROMPT_VERSION,
 )
-from src.gemini_classification.vertex_batch_inference_manager import VertexBatchInferenceManager
+from src.gemini_classification.vertex_batch_inference_manager import (
+    VertexBatchInferenceManager,
+)
 from src.gemini_classification.vertex_dataset_processor import VertexDatasetProcessor
 from src.gemini_classification.vertex_tuning_manager import VertexTuningManager
 

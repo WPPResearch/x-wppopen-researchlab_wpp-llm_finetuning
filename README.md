@@ -8,12 +8,12 @@ This repository contains the codebase for fine-tuning Large Language Models (LLM
 
 The project code is primarily organized into three separate workflows:
 
-1. **Gemini Vertex AI Workflow (`gemini_classification_main.py`)** 
+1. **Gemini Vertex AI Workflow (`gemini_classification_main.py`)**
    - A fully managed pipeline to prepare data, finetune Google's Gemini models, and perform batch inference using Vertex AI.
 2. **Gemma Vertex AI Custom Jobs Workflow (`gemma_classification_main.py`)**
    - An orchestration script to submit a custom training job to Vertex AI for fine-tuning open-weights models (principally Gemma).
 3. **Local LLM Classifier (`src/qwen_local_classification/`)**
-   - A standalone module for finetuning Qwen3 designed to run on a local GPU-equipped compute instance (e.g., via a Google Cloud Compute Engine VM using Conda). 
+   - A standalone module for finetuning Qwen3 designed to run on a local GPU-equipped compute instance (e.g., via a Google Cloud Compute Engine VM using Conda).
 
 ## Models Used
 
@@ -88,7 +88,7 @@ The main entry point for this workflow is `gemini_classification_main.py`. This 
 
 ### Technical Finetuning Details:
 - **Manner of Finetuning:** Executed via fully managed Vertex AI Supervised Tuning (`SupervisedTuningJob`). It trains a LoRA adapter against the frozen baseline Gemini weights.
-- **Parameters:** Main variables exported include Epochs, Learning Rate Multiplier (LRM), and LoRA Adapter Size (e.g. `ADAPTER_SIZE_SIXTEEN`). 
+- **Parameters:** Main variables exported include Epochs, Learning Rate Multiplier (LRM), and LoRA Adapter Size (e.g. `ADAPTER_SIZE_SIXTEEN`).
 - **Output Treatment:** Since Gemini is a generative Causal LM, classification outputs are treated as generative text. However, during the Batch Prediction job, we enforce rigorous schema adherence using Vertex AI's structured outputs (`"response_mime_type": "text/x.enum"` and `"response_schema": {"enum": ["0", "1", "2"]}`). This guarantees the generated string will precisely map back to one of the target taxonomy classes.
 
 ### Viewing Results:
@@ -96,7 +96,7 @@ After the pipeline completes `evaluate_results()`, you can find the performance 
 - **Metrics Logs:** `results/classification/gemini_eval_summary.csv` (Contains F1 Macro, F1 Weighted, exact match summaries, etc.)
 - **Confusion Matrices:** `results/classification/confusion_m/` (PNG plots visualising predicted versus true class distributions)
 
-**Note on Raw Predictions:** The actual Batch Prediction output arrays (raw JSONL files containing the model's generated text for the validation and test sets) are saved directly in your Google Cloud Storage bucket. 
+**Note on Raw Predictions:** The actual Batch Prediction output arrays (raw JSONL files containing the model's generated text for the validation and test sets) are saved directly in your Google Cloud Storage bucket.
 Vertex AI automatically creates a directory based on the prediction job name. You can expect to find the raw prediction dumps roughly under:
 - **Base model evaluation (Control):** `gs://<BUCKET_NAME>/batch_predictions/<split>_set_pred_baseline_<model_name>_<version>/`
 - **Fine-tuned model evaluation:** `gs://<BUCKET_NAME>/batch_predictions/<split>_set_pred_ft_<model_name>_<version>_<hyperparams>/`
@@ -140,7 +140,7 @@ The entry point for this workflow is `gemma_classification_main.py`. It submits 
    - The remote custom training job runs the `train_gemma_sft.py` script.
 
 ### Technical Finetuning Details:
-- **Manner of Finetuning:** Standard Supervised Fine-Tuning (SFT) using Hugging Face's `TRL (SFTTrainer)` on Vertex AI compute. The base model is quantized to `bfloat16`. 
+- **Manner of Finetuning:** Standard Supervised Fine-Tuning (SFT) using Hugging Face's `TRL (SFTTrainer)` on Vertex AI compute. The base model is quantized to `bfloat16`.
 - **Parameters:** Configured using the `transformers` TrainingArguments (Batch size, Gradient Accumulation, Cosine decay learning rate schedules). Additionally, we can specify `--freeze-bottom-layers` to only fine-tune the upper heads of the network.
 - **Output Treatment:** During inference, Gemma behaves auto-regressively via `model.generate()`. However, we utilize a custom `LogitsProcessor` (`LabelConstraint`) to forcefully set all un-allowed token probabilities to negative infinity. This ensures the output generation strictly adheres to the one-token class limits (i.e. '0', '1', '2').
 - **Important Note:** Because this highly constrained structure limits output generation to a single token, it is much more concise and demonstrably performs better in tests. Thus, this Gemma pipeline strictly only supports system prompts that encode classification labels as integers (ie `SYSTEM_PROMPT[3]`)!
@@ -227,7 +227,7 @@ You can optionally apply confidence boosting adjustments to the model's intermed
 ```bash
 uv run python qwen_classification_main.py predict --boost
 ```
-Because LLM logit distributions often skew towards majority classes in imbalanced datasets (e.g., classifying "Average performance" far more often than edge-cases), passing the `--boost` flag manually multiplies the raw prediction logits for specific class numbers by static weighting factors **before** the final `softmax` mapping. 
+Because LLM logit distributions often skew towards majority classes in imbalanced datasets (e.g., classifying "Average performance" far more often than edge-cases), passing the `--boost` flag manually multiplies the raw prediction logits for specific class numbers by static weighting factors **before** the final `softmax` mapping.
 Currently configured to `[2.5, 1.0, 2.5]`, this artificially boosts the likelihood of the `0` (Underperforming) and `2` (Overperforming) classes over the `1` (Average) class to recover minority-class sensitivity. This will shift the final predicted distribution when saving `test_predictions_oversampled_boosted.txt`.
 
 ### Technical Finetuning Details:
