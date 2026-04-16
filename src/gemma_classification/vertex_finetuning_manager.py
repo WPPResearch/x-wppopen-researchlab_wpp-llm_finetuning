@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from google.cloud import aiplatform
-from google.cloud import storage
 
 from src.gemma_classification.config import (
     BASE_MODEL,
@@ -9,7 +8,7 @@ from src.gemma_classification.config import (
     BUCKET_URI,
     LOCATION,
     PROJECT_ID,
-    HF_TOKEN 
+    HF_TOKEN,
 )
 from src.gemma_classification.helpers import upload_directory_to_gcs, download_gcs_file
 
@@ -89,15 +88,11 @@ class VertexTuningManager:
                         # "machine_type": "a2-ultragpu-1g",
                         # "accelerator_type": "NVIDIA_A100_80GB",
                         "accelerator_count": 1,
-
                     },  # adjust as needed, this configuration works
                     "replica_count": 1,
                     "container_spec": {
                         "env": [
-                            {
-                                "name": "HUGGING_FACE_HUB_TOKEN",
-                                "value": f"{HF_TOKEN}"
-                            }
+                            {"name": "HUGGING_FACE_HUB_TOKEN", "value": f"{HF_TOKEN}"}
                         ],
                         "image_uri": f"gcr.io/{PROJECT_ID}/gemma-classifier:latest",
                         "args": [
@@ -107,7 +102,7 @@ class VertexTuningManager:
                             f"--epochs={epochs}",
                             f"--lr={lr}",
                             f"--base_model={BASE_MODEL}",
-                            f"--test-data={test_uri}"
+                            f"--test-data={test_uri}",
                         ],
                     },
                 }
@@ -119,12 +114,12 @@ class VertexTuningManager:
 
         # Download the test predictions
         print("--- Downloading test predictions ---")
-        
+
         gcs_pred_path = f"{output_dir}/test_predictions.txt"
         local_dir = Path("results/classification/submissions")
         local_filename = f"test_set_pred_{job_display_name}.txt"
         local_path = local_dir / local_filename
-        
+
         download_gcs_file(gcs_pred_path, local_path, project_id=PROJECT_ID)
 
         return job

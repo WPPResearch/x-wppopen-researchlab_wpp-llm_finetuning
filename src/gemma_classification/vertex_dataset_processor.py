@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import pandas as pd
 
-from src.gemma_classification.config import DATASET_VERSION, SYSTEM_PROMPT_VERSION
+from src.gemma_classification.config import DATASET_VERSION
 from src.gemma_classification.helpers import (
     save_jsonlines,
     verify_local_datasets,
@@ -161,4 +161,3 @@ class VertexDatasetProcessor:
             / f"test_sys_prompt_{self.sys_v}_{DATASET_VERSION}.jsonl",
             test_data,
         )
-

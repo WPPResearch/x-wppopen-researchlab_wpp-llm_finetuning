@@ -1,7 +1,7 @@
 import argparse
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import torch
 from datasets import DatasetDict, load_dataset
@@ -100,13 +100,15 @@ def process_batch_for_inference(
     """
     tokenizer.padding_side = "left"
     formatted_prompts = [
-        tokenizer.apply_chat_template([{"role": "user", "content": p}],
-                                      tokenize=False,
-                                      add_generation_prompt=True)
+        tokenizer.apply_chat_template(
+            [{"role": "user", "content": p}], tokenize=False, add_generation_prompt=True
+        )
         for p in prompts
     ]
 
-    inputs = tokenizer(formatted_prompts, return_tensors="pt", padding=True).to(model.device)
+    inputs = tokenizer(formatted_prompts, return_tensors="pt", padding=True).to(
+        model.device
+    )
 
     with torch.inference_mode():
         outputs = model.generate(
@@ -117,7 +119,10 @@ def process_batch_for_inference(
             pad_token_id=tokenizer.pad_token_id,
         )
 
-    return [tokenizer.decode([tid], skip_special_tokens=True).strip() for tid in outputs[:, -1]]
+    return [
+        tokenizer.decode([tid], skip_special_tokens=True).strip()
+        for tid in outputs[:, -1]
+    ]
 
 
 # -------------------------
@@ -127,6 +132,7 @@ def format_dataset(ds: DatasetDict, tokenizer: AutoTokenizer) -> DatasetDict:
     """
     Apply Gemma3 chat template formatting to a dataset.
     """
+
     def formatting_func(examples: dict) -> dict:
         texts = []
         for prompt, completion in zip(examples["prompt"], examples["completion"]):
@@ -145,11 +151,14 @@ def format_dataset(ds: DatasetDict, tokenizer: AutoTokenizer) -> DatasetDict:
 
 def format_test_dataset(ds: DatasetDict, tokenizer: AutoTokenizer) -> DatasetDict:
     """Apply chat template formatting for test data (prompts only)."""
+
     def formatting_func(examples: dict) -> dict:
         texts = [
-            tokenizer.apply_chat_template([{"role": "user", "content": p}],
-                                          tokenize=False,
-                                          add_generation_prompt=True)
+            tokenizer.apply_chat_template(
+                [{"role": "user", "content": p}],
+                tokenize=False,
+                add_generation_prompt=True,
+            )
             for p in examples["prompt"]
         ]
         return {"text": texts}
@@ -202,19 +211,26 @@ def main() -> None:
     # Freeze bottom layers if specified
     if args.freeze_bottom_layers > 0:
         for name, param in model.named_parameters():
-            if any(f"model.layers.{i}." in name for i in range(args.freeze_bottom_layers)):
+            if any(
+                f"model.layers.{i}." in name for i in range(args.freeze_bottom_layers)
+            ):
                 param.requires_grad = False
 
     # Load dataset
-  
-    ds = load_dataset("json", data_files={
-        "train": download_gcs_file(args.train_data),
-        "validation": download_gcs_file(args.val_data),
-    })
+
+    ds = load_dataset(
+        "json",
+        data_files={
+            "train": download_gcs_file(args.train_data),
+            "validation": download_gcs_file(args.val_data),
+        },
+    )
     ds = ds.rename_column("response", "completion")
     ds = format_dataset(ds, tokenizer)
     if args.test_data:
-        test_ds = load_dataset("json", data_files={"test": download_gcs_file(args.test_data)})
+        test_ds = load_dataset(
+            "json", data_files={"test": download_gcs_file(args.test_data)}
+        )
         test_ds = format_test_dataset(test_ds, tokenizer)
 
     # Setup Trainer
@@ -259,15 +275,19 @@ def main() -> None:
         prompts = test_ds["test"]["prompt"]
         # Note that this only works for prompts with encoded integer labels of length 1 i.e. 0, 1, 2
         labels = ["0", "1", "2"]
-        allowed_ids = list({tokenizer.encode(l, add_special_tokens=False)[0] for l in labels})
+        allowed_ids = list(
+            {tokenizer.encode(label, add_special_tokens=False)[0] for label in labels}
+        )
         logits_processor = LogitsProcessorList([LabelConstraint(allowed_ids)])
 
         predictions: List[str] = []
         for i in range(0, len(prompts), batch_size):
             batch_prompts = prompts[i : i + batch_size]
-            batch_preds = process_batch_for_inference(batch_prompts, tokenizer, model, logits_processor)
+            batch_preds = process_batch_for_inference(
+                batch_prompts, tokenizer, model, logits_processor
+            )
             predictions.extend(batch_preds)
-        
+
         print("Unique predicted values: ", set(predictions))
         output_file = "test_predictions.txt"
         with open(output_file, "w") as f:

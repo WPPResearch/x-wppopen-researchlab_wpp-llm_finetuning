@@ -1,5 +1,4 @@
 import json
-import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Union, Optional
 from google.cloud import storage
@@ -10,9 +9,11 @@ from src.gemma_classification.config import BASE_MODEL
 def verify_local_datasets(dataset_version: str) -> None:
     """Checks if Git LFS files exist in the expected directory."""
     target_dir = Path(f"data/raw_data/{dataset_version}")
-    
+
     if not target_dir.exists():
-        print(f"Error: Directory {target_dir} not found. Ensure Git LFS is initialized.")
+        print(
+            f"Error: Directory {target_dir} not found. Ensure Git LFS is initialized."
+        )
         return
 
     files = list(target_dir.glob("*.jsonl"))
@@ -63,16 +64,18 @@ def download_gcs_file(
     """Downloads a file from Google Cloud Storage to a local path."""
     try:
         client = storage.Client(project=project_id) if project_id else storage.Client()
-        
-        path_without_scheme = gcs_uri.replace("gs://", "", 1) if gcs_uri.startswith("gs://") else gcs_uri
+
+        path_without_scheme = (
+            gcs_uri.replace("gs://", "", 1) if gcs_uri.startswith("gs://") else gcs_uri
+        )
         bucket_name, blob_name = path_without_scheme.split("/", 1)
-        
+
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
-        
+
         target_path = Path(local_path)
         target_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         blob.download_to_filename(str(target_path))
         print(f"Downloaded gs://{bucket_name}/{blob_name} to {target_path}")
         return True
