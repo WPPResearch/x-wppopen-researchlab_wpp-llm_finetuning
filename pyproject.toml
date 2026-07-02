@@ -31,7 +31,7 @@ dev = [
 [project.optional-dependencies]
 qwen = [
     "torch>=2.1.0",
-    "transformers>=4.50.0",
+    "transformers>=5.3.0",
     "trl>=0.8.6",
     "datasets",
     "peft",
@@ -41,7 +41,7 @@ qwen = [
 ]
 gemma = [
     "torch>=2.1.0",
-    "transformers>=4.50.0",
+    "transformers>=5.3.0",
     "trl>=0.8.6",
     "datasets",
     "accelerate",
