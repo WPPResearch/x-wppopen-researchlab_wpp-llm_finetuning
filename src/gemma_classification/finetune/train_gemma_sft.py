@@ -240,7 +240,7 @@ def main() -> None:
         train_dataset=ds["train"],
         eval_dataset=ds["validation"],
         args=TrainingArguments(
-            warmup_steps=10,
+            warmup_steps=0.1,
             num_train_epochs=args.epochs,
             bf16=True,
             report_to="none",
@@ -257,7 +257,6 @@ def main() -> None:
             per_device_eval_batch_size=4,
             max_grad_norm=1.0,
             lr_scheduler_type="cosine",
-            warmup_ratio=0.1,
         ),
     )
     trainer.train()
